@@ -8,10 +8,26 @@ import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { PointLight } from "@babylonjs/core/Lights/pointLight";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { HighlightLayer } from "@babylonjs/core/Layers/highlightLayer";
-import { GlowLayer } from "@babylonjs/core/Layers/glowLayer"
+import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
+
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+
+import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+import "@babylonjs/core/Helpers/sceneHelpers";
+import "@babylonjs/core/Loading/Plugins/babylonFileLoader";
+import 'babylonjs-loaders';
+import "@babylonjs/core/Loading/loadingScreen";
 
 import "@babylonjs/core/Materials/standardMaterial";
 import "@babylonjs/core/Layers/effectLayerSceneComponent";
+
+import "@babylonjs/core/Materials/PBR/index";
+import "@babylonjs/core/Materials/PBR/pbrMaterial";
+
+import "@babylonjs/core/Materials/index";
+
+import 'babylonjs-materials';
+import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 
 
 let canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element 
@@ -36,53 +52,52 @@ let createScene = function ()
 
     camera.inertia = 0;
 
-    // Add lights to the scene
-    let light1 = new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
-
-    let lp = new Vector3(0, 1, -1);
-    let light2 = new PointLight("light2", lp, scene);
-
-    // Add and manipulate meshes in the scene
-    let myPoints = [
-        new Vector3(0, 0, 0),
-        new Vector3(100, 0, 0),
-        new Vector3(100, 100, 0),
-        new Vector3(0, 100, 0),
-    ];
-
-    let ptss = require("./pts.json");
-
-    // Add the highlight layer.
-    var hl = new HighlightLayer("hl1", scene);
-
-    for (let pts of ptss)
+    // Load the model
+    SceneLoader.ShowLoadingScreen = false;
+    SceneLoader.Append("https://www.babylonjs.com/Assets/FlightHelmet/glTF/", "FlightHelmet_Materials.gltf", scene, function (meshes)
     {
-        for (let i = 0; i < 1; i++)
-        {
-            for (let j = 0; j < 1; j++)
-            {
-                let m = new Vector3(i * 1000, j * 1000);
-                let line = MeshBuilder.CreateLines("lines", {
-                    points: pts.map(p => new Vector3(p.x - 340204, p.y, p.z).multiplyByFloats(0.1, 0.1, 0.1).add(m))
-                }, scene);
+        // Create a camera pointing at your model.
+        // camera.useAutoRotationBehavior = true;
+        // camera.lowerRadiusLimit = 15;
+        // camera.upperRadiusLimit = 180;
 
-                // if (i === 0 && j === 0)
-                //     hl.addMesh(line, Color3.Green());
+        // camera.alpha = 0.8;
+
+        scene.lights[0].dispose();
+        var light = new DirectionalLight("light1", new Vector3(-2, -6, -2), scene);
+        light.position = new Vector3(20, 60, 20);
+        light.shadowMinZ = 30;
+        light.shadowMaxZ = 180;
+        light.intensity = 5;
+
+        var generator = new ShadowGenerator(512, light);
+        generator.useContactHardeningShadow = true;
+        generator.bias = 0.01;
+        generator.normalBias = 0.05;
+        generator.contactHardeningLightSizeUVRatio = 0.08;
+
+        for (var i = 0; i < scene.meshes.length; i++)
+        {
+            generator.addShadowCaster(scene.meshes[i]);
+            scene.meshes[i].receiveShadows = true;
+            //@ts-ignore
+            if (scene.meshes[i].material && scene.meshes[i].material.bumpTexture)
+            {
+                //@ts-ignore
+                scene.meshes[i].material.bumpTexture.level = 2;
             }
         }
 
-    }
+        var helper = scene.createDefaultEnvironment({
+            skyboxSize: 1500,
+            groundShadowLevel: 0.5,
+        });
 
-    // let gl = new GlowLayer("", scene);
-    // gl.customEmissiveColorSelector = (mesh, subMesh, material, result) =>
-    // {
-    //     // if (mesh == lines)
-    //     {
-    //         result.r = 0;
-    //         result.g = 10;
-    //         result.b = 10;
-    //     }
-    // }
+        helper.setMainColor(Color3.Gray());
+
+        scene.environmentTexture.lodGenerationScale = 0.6;
+    });
+
 
     return scene;
 };
