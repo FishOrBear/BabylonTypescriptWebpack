@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "module": "commonjs",
+        "allowJs": true,
+        "target": "es5",
+        "noLib": false,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "lib": [
+            "esnext",
+        ],
+        "types": [
+            "node",
+            "webpack-env",
+            "webpack-dev-server"
+        ],
+        "experimentalDecorators": true
+    },
+    "include": [
+        "./config/**/*",
+    ]
+}

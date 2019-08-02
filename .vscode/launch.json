@@ -1,0 +1,60 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Chrome调试",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:7779",
+            "webRoot": "${workspaceFolder}",
+            "skipFiles": [
+                "*.dll.js" //跳过.js文件的调试,避免调试堆栈进入js文件
+            ]
+        },
+        //Ref: https://github.com/Microsoft/vscode-recipes/blob/master/debugging-jest-tests/.vscode/launch.json
+        {
+            "name": "Jest 所有文件",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": [
+                "--runInBand"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**/*.js"
+            ]
+        },
+        {
+            "name": "Jest 当前文件",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": [
+                "${relativeFile}"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "smartStep": false,
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**/*.js"
+            ]
+        },
+        {
+            "name": "运行 当前TS文件",
+            "type": "node",
+            "request": "launch",
+            "args": [
+                "${file}"
+            ],
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register"
+            ],
+            "cwd": "${workspaceFolder}",
+            "protocol": "inspector",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}

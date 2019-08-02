@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "module": "commonjs",
+        "target": "esnext",
+        "noLib": false,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "lib": [
+            "esnext",
+            "dom"
+        ],
+        "types": [
+            "node",
+            "webpack-env",
+            "webpack-dev-server",
+        ],
+        "jsx": "react",
+        "experimentalDecorators": true
+    },
+    "include": [
+        "./src/**/*",
+        "./utils/**/*",
+        "./__test__/**/*",
+        "./config/**/*",
+    ]
+}
