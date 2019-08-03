@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Babylon Template</title>
+
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+
+    <script src="https://preview.babylonjs.com/babylon.max.js"></script>
+    <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+</head>
+
+<body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
+
+    <script>
+        var canvas = document.getElementById("renderCanvas"); // Get the canvas element 
+        var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+        /******* Add the create scene function ******/
+        var createScene = function () {
+
+            // Create the scene space
+            var scene = new BABYLON.Scene(engine);
+
+            // Add a camera to the scene and attach it to the canvas
+            var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0, 0, 5), scene);
+            camera.attachControl(canvas, true);
+
+            // Add lights to the scene
+            var light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+            var light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+
+            // Add and manipulate meshes in the scene
+            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+
+            BABYLON.SceneLoader.Append("https://www.babylonjs.com/Assets/FlightHelmet/glTF/", "FlightHelmet_Materials.gltf", scene, function (meshes) {
+                console.log(meshes.meshes.length);
+                // Create a camera pointing at your model.
+                scene.createDefaultCameraOrLight(true, true, true);
+                scene.activeCamera.useAutoRotationBehavior = true;
+                scene.activeCamera.lowerRadiusLimit = 15;
+                scene.activeCamera.upperRadiusLimit = 180;
+
+                scene.activeCamera.alpha = 0.8;
+
+                scene.lights[0].dispose();
+                var light = new BABYLON.DirectionalLight("light1", new BABYLON.Vector3(-2, -6, -2), scene);
+                light.position = new BABYLON.Vector3(20, 60, 20);
+                light.shadowMinZ = 30;
+                light.shadowMaxZ = 180;
+                light.intensity = 5;
+
+                var generator = new BABYLON.ShadowGenerator(512, light);
+                generator.useContactHardeningShadow = true;
+                generator.bias = 0.01;
+                generator.normalBias = 0.05;
+                generator.contactHardeningLightSizeUVRatio = 0.08;
+
+                for (var i = 0; i < scene.meshes.length; i++)
+                {
+                    generator.addShadowCaster(scene.meshes[i]);
+                    scene.meshes[i].receiveShadows = true;
+                    if (scene.meshes[i].material && scene.meshes[i].material.bumpTexture)
+                    {
+                        scene.meshes[i].material.bumpTexture.level = 2;
+                    }
+                }
+
+                var helper = scene.createDefaultEnvironment({
+                    skyboxSize: 1500,
+                    groundShadowLevel: 0.5,
+                });
+
+                helper.setMainColor(BABYLON.Color3.Gray());
+
+                scene.environmentTexture.lodGenerationScale = 0.6;
+
+                console.log(meshes.meshes.length);
+
+            });
+
+
+            console.log(scene.meshes.length);
+
+            return scene;
+        };
+        /******* End of the create scene function ******/
+
+        var scene = createScene(); //Call the createScene function
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+
+</body>
+
+</html>

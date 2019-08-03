@@ -13,10 +13,10 @@ import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+
+
 import "@babylonjs/core/Helpers/sceneHelpers";
 import "@babylonjs/core/Loading/Plugins/babylonFileLoader";
-import 'babylonjs-loaders';
-import "@babylonjs/core/Loading/loadingScreen";
 
 import "@babylonjs/core/Materials/standardMaterial";
 import "@babylonjs/core/Layers/effectLayerSceneComponent";
@@ -25,10 +25,14 @@ import "@babylonjs/core/Materials/PBR/index";
 import "@babylonjs/core/Materials/PBR/pbrMaterial";
 
 import "@babylonjs/core/Materials/index";
-
-import 'babylonjs-materials';
+import "@babylonjs/core/Loading/loadingScreen";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent"
+// import { GLTFFileLoader } from "babylonjs-loaders";
+import "@babylonjs/loaders/glTF"
 
+
+// SceneLoader.RegisterPlugin(new GLTFFileLoader());
 
 let canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element 
 let engine = new Engine(canvas, true, { stencil: true }); // Generate the BABYLON 3D engine
@@ -41,27 +45,30 @@ let createScene = function ()
     let scene = new Scene(engine);
     scene.useRightHandedSystem = true;
 
-    // Add a camera to the scene and attach it to the canvas
+    // // Add a camera to the scene and attach it to the canvas
     let camera = new ArcRotateCamera("Camera", 0, 0, 100, new Vector3(0, 0, 0), scene);
-    camera.setPosition(new Vector3(0, 0, 1000));
-    camera.inputs;
-    camera.attachControl(canvas, true);
-    camera.wheelDeltaPercentage = 0.2;
+    // camera.setPosition(new Vector3(0, 0, 1000));
+    // camera.inputs;
+    // camera.attachControl(canvas, true);
+    // camera.wheelDeltaPercentage = 0.2;
 
-    globalThis.camera = camera;
+    // globalThis.camera = camera;
 
-    camera.inertia = 0;
+    // camera.inertia = 0;
 
     // Load the model
     SceneLoader.ShowLoadingScreen = false;
+    console.log(scene.meshes.length);
     SceneLoader.Append("https://www.babylonjs.com/Assets/FlightHelmet/glTF/", "FlightHelmet_Materials.gltf", scene, function (meshes)
     {
         // Create a camera pointing at your model.
-        // camera.useAutoRotationBehavior = true;
-        // camera.lowerRadiusLimit = 15;
-        // camera.upperRadiusLimit = 180;
+        scene.createDefaultCameraOrLight(true, true, true);
+        let camera = scene.activeCamera as ArcRotateCamera;
+        camera.useAutoRotationBehavior = true;
+        camera.lowerRadiusLimit = 15;
+        camera.upperRadiusLimit = 180;
 
-        // camera.alpha = 0.8;
+        camera.alpha = 0.8;
 
         scene.lights[0].dispose();
         var light = new DirectionalLight("light1", new Vector3(-2, -6, -2), scene);
