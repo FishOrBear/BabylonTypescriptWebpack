@@ -1,6 +1,7 @@
 import * as webpack from 'webpack';
 import * as merge from 'webpack-merge';
 import common from './webpack.common';
+import * as path from 'path';
 
 const config: webpack.Configuration = merge(
     common,
@@ -11,6 +12,7 @@ const config: webpack.Configuration = merge(
         devServer: {
             port: 7779,
             host: "0.0.0.0",
+            contentBase: path.resolve(__dirname, "../dist/"),
             hot: true
         },
         // module: {
