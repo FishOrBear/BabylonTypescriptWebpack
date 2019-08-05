@@ -2,7 +2,7 @@ import "./style.less";
 
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { Scene } from "@babylonjs/core/scene";
-import { Vector3, Vector2, Color3 } from "@babylonjs/core/Maths/math";
+import { Vector3, Vector2, Color3, Matrix } from "@babylonjs/core/Maths/math";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import { PointLight } from "@babylonjs/core/Lights/pointLight";
@@ -33,7 +33,8 @@ import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator"
 import "@babylonjs/loaders/glTF"
 import { BoxBuilder } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
-import { Texture } from "@babylonjs/core/Materials/index";
+import { Texture, DynamicTexture, StandardMaterial } from "@babylonjs/core/Materials/index";
+import { Mesh } from "@babylonjs/core";
 
 // SceneLoader.RegisterPlugin(new GLTFFileLoader());
 
@@ -46,6 +47,7 @@ let createScene = function ()
     // Create the scene space
     let scene = new Scene(engine);
     scene.useRightHandedSystem = true;
+    Matrix.LookAtLHToRef
 
     // // Add a camera to the scene and attach it to the canvas
     let camera = new ArcRotateCamera("Camera", 0, 0, 100, new Vector3(0, 0, 0), scene);
@@ -63,7 +65,6 @@ let createScene = function ()
 
     camera.useAutoRotationBehavior = true;
     camera.autoRotationBehavior.idleRotationSpeed;
-    camera.speed
     camera.lowerRadiusLimit = 15;
     camera.upperRadiusLimit = 180;
 
@@ -71,6 +72,7 @@ let createScene = function ()
 
 
     let woodPlank = BoxBuilder.CreateBox("gg", { width: 65, height: 1, depth: 65 }, scene);
+    woodPlank.position.y = 50;
 
     var wood = new PBRMaterial("wood", scene);
     wood.environmentIntensity = 1;
@@ -82,6 +84,10 @@ let createScene = function ()
     wood.albedoColor = Color3.White();
     wood.albedoTexture = new Texture("albedo.png", scene);
     woodPlank.material = wood;
+    let nd = woodPlank.clone();
+    nd.position.y = 0;
+
+    nd._worldMatrix
 
     // Load the model
     SceneLoader.ShowLoadingScreen = false;
@@ -121,6 +127,49 @@ let createScene = function ()
     scene.environmentTexture.lodGenerationScale = 0.6;
 
     console.log("end");
+
+
+    // show axis
+    var showAxis = function (size)
+    {
+        var makeTextPlane = function (text, color, size)
+        {
+            var dynamicTexture = new DynamicTexture("DynamicTexture", 50, scene, true);
+            dynamicTexture.hasAlpha = true;
+            dynamicTexture.drawText(text, 5, 40, "bold 36px Arial", color, "transparent", true);
+            var plane = Mesh.CreatePlane("TextPlane", size, scene, true);
+            let mat = new StandardMaterial("TextPlaneMaterial", scene);
+            plane.material = mat;
+            mat.backFaceCulling = false;
+            mat.specularColor = new Color3(0, 0, 0);
+            mat.diffuseTexture = dynamicTexture;
+            return plane;
+        };
+
+        var axisX = Mesh.CreateLines("axisX", [
+            Vector3.Zero(), new Vector3(size, 0, 0), new Vector3(size * 0.95, 0.05 * size, 0),
+            new Vector3(size, 0, 0), new Vector3(size * 0.95, -0.05 * size, 0)
+        ], scene);
+        axisX.color = new Color3(1, 0, 0);
+        var xChar = makeTextPlane("X", "red", size / 10);
+        xChar.position = new Vector3(0.9 * size, -0.05 * size, 0);
+        var axisY = Mesh.CreateLines("axisY", [
+            Vector3.Zero(), new Vector3(0, size, 0), new Vector3(-0.05 * size, size * 0.95, 0),
+            new Vector3(0, size, 0), new Vector3(0.05 * size, size * 0.95, 0)
+        ], scene);
+        axisY.color = new Color3(0, 1, 0);
+        var yChar = makeTextPlane("Y", "green", size / 10);
+        yChar.position = new Vector3(0, 0.9 * size, -0.05 * size);
+        var axisZ = Mesh.CreateLines("axisZ", [
+            Vector3.Zero(), new Vector3(0, 0, size), new Vector3(0, -0.05 * size, size * 0.95),
+            new Vector3(0, 0, size), new Vector3(0, 0.05 * size, size * 0.95)
+        ], scene);
+        axisZ.color = new Color3(0, 0, 1);
+        var zChar = makeTextPlane("Z", "blue", size / 10);
+        zChar.position = new Vector3(0, 0.05 * size, 0.9 * size);
+    };
+
+    showAxis(5);
 
     // SceneLoader.Append("http://localhost:7779/", "FlightHelmet_Materials.gltf", scene, function (meshes)
     // {

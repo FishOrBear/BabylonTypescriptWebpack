@@ -14,9 +14,7 @@
             "node",
             "webpack-env",
             "webpack-dev-server",
-            "babylonjs",
-            "babylonjs-loaders",
-            "babylonjs-materials",
+            "@babylonjs/core",
         ],
         "jsx": "react",
         "experimentalDecorators": true
